@@ -1060,6 +1060,23 @@ var pJS = function(tag_id, params){
   /* ---------- pJS functions - vendors ------------ */
 
   pJS.fn.vendors.eventsListeners = function(){
+    function getCoords(elem) {
+      var box = elem.getBoundingClientRect();
+
+      var body = document.body;
+      var docEl = document.documentElement;
+
+      var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+      var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+
+      var clientTop = docEl.clientTop || body.clientTop || 0;
+      var clientLeft = docEl.clientLeft || body.clientLeft || 0;
+
+      var top  = box.top +  scrollTop - clientTop;
+      var left = box.left + scrollLeft - clientLeft;
+
+      return { top: Math.round(top), left: Math.round(left) };
+    }
 
     /* events target element */
     if(pJS.interactivity.detect_on == 'window'){
@@ -1074,12 +1091,19 @@ var pJS = function(tag_id, params){
 
       /* el on mousemove */
       pJS.interactivity.el.addEventListener('mousemove', function(e){
-
-        if(pJS.interactivity.el == window){
-          var pos_x = e.clientX,
-              pos_y = e.clientY;
+        if (pJS.interactivity.el == window) {
+          var canvasCoords = getCoords(canvas_el);
+          var mouseDocumentPositionX = e.clientX + window.scrollX;
+          var mouseDocumentPositionY = e.clientY + window.scrollY;
+          if (mouseDocumentPositionX >= canvasCoords.left &&
+            mouseDocumentPositionX <= canvasCoords.left + canvas_el.width &&
+            mouseDocumentPositionY >= canvasCoords.top &&
+            mouseDocumentPositionY <= canvasCoords.top + canvas_el.height ) {
+              var pos_x = mouseDocumentPositionX - canvasCoords.left;
+              pos_y = mouseDocumentPositionY - canvasCoords.top;
+          }
         }
-        else{
+        else {
           var pos_x = e.offsetX || e.clientX,
               pos_y = e.offsetY || e.clientY;
         }
@@ -1093,7 +1117,6 @@ var pJS = function(tag_id, params){
         }
 
         pJS.interactivity.status = 'mousemove';
-
       });
 
       /* el on onmouseleave */
